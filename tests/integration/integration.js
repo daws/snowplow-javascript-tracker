@@ -202,10 +202,41 @@ define([
 			}));
 		},
 
-
 	    'Check pageViewId is regenerated for each trackPageView': function () {
 		    assert.isTrue(pageViewsHaveDifferentIds());
-	    }
+	    },
+
+	    'Check event listener applies transform function to events': function () {
+			var formId = "test-form";
+			var formClasses = [];
+			var elements = [{
+				name: "email",
+				value: "transformed",
+				nodeName: "INPUT",
+				type: "text"
+			}];
+
+			var inputJson = {
+				schema: 'iglu:com.snowplowanalytics.snowplow/submit_form/jsonschema/1-0-0',
+				data: {
+					formId: formId,
+					formClasses: formClasses,
+					elements: elements
+				}
+			};
+
+			var expected = {
+				e: 'ue',
+				ue_pr: JSON.stringify({
+					schema: unstructEventSchema,
+					data: inputJson
+				})
+			};
+
+			assert.isTrue(checkExistenceOfExpectedQuerystring(
+				expected, 'A transformed form submission should be detected.'
+			))
+		}
 
 	});
 });

@@ -58,6 +58,9 @@ object.getFormTrackingManager = function (core, trackerId, contextAdder) {
 	// Filter to determine which form fields should be tracked
 	var fieldFilter = function () { return true };
 
+	// Function applied to all elements
+	var fieldTransform = lodash.identity;
+
 	/*
 	 * Get an identifier for a form, input, textarea, or select element
 	 */
@@ -119,11 +122,11 @@ object.getFormTrackingManager = function (core, trackerId, contextAdder) {
 	/*
 	 * Return function to handle form field change event
 	 */
-	function getFormChangeListener(context) {
+	function getFormChangeListener(context, transform) {
 		return function (e) {
 			var elt = e.target;
 			var type = (elt.nodeName && elt.nodeName.toUpperCase() === 'INPUT') ? elt.type : null;
-			var value = (elt.type === 'checkbox' && !elt.checked) ? null : elt.value;
+			var value = (elt.type === 'checkbox' && !elt.checked) ? null : transform(elt.value);
 			core.trackFormChange(getParentFormName(elt), getFormElementName(elt), elt.nodeName, type, helpers.getCssClasses(elt), value, contextAdder(context));
 		};
 	}
@@ -131,10 +134,13 @@ object.getFormTrackingManager = function (core, trackerId, contextAdder) {
 	/*
 	 * Return function to handle form submission event
 	 */
-	function getFormSubmissionListener(context) {
+	function getFormSubmissionListener(context, transform) {
 		return function (e) {
 			var elt = e.target;
 			var innerElements = getInnerFormElements(elt);
+			lodash.forEach(innerElements, function (innerElement) {
+				innerElement.value = transform(innerElement.value);
+			});
 			core.trackFormSubmission(getFormElementName(elt), helpers.getCssClasses(elt), innerElements, contextAdder(context));
 		};
 	}
@@ -148,6 +154,7 @@ object.getFormTrackingManager = function (core, trackerId, contextAdder) {
 			if (config) {
 				formFilter = helpers.getFilter(config.forms, true);
 				fieldFilter = helpers.getFilter(config.fields, false);
+				fieldTransform = helpers.getTransform(config.fields);
 			}
 		},
 
@@ -162,13 +169,13 @@ object.getFormTrackingManager = function (core, trackerId, contextAdder) {
 					lodash.forEach(innerElementTags, function (tagname) {
 						lodash.forEach(form.getElementsByTagName(tagname), function (innerElement) {
 							if (fieldFilter(innerElement) && !innerElement[trackingMarker] && innerElement.type.toLowerCase() !== 'password') {
-								helpers.addEventListener(innerElement, 'change', getFormChangeListener(context), false);
+								helpers.addEventListener(innerElement, 'change', getFormChangeListener(context, fieldTransform), false);
 								innerElement[trackingMarker] = true;
 							}
 						});
 					});
 
-					helpers.addEventListener(form, 'submit', getFormSubmissionListener(context));
+					helpers.addEventListener(form, 'submit', getFormSubmissionListener(context, fieldTransform));
 					form[trackingMarker] = true;
 				}
 			});
