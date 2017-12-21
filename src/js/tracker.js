@@ -1613,6 +1613,56 @@
 			},
 
 			/**
+			 * Expires current session and starts a new session.
+			 */
+			newSession: function () {
+				// If cookies are enabled, base visit count and session ID on the cookies
+				var nowTs = Math.round(new Date().getTime() / 1000),
+					ses = getSnowplowCookieValue('ses'),
+					id = loadDomainUserIdCookie(),
+					cookiesDisabled = id[0],
+					_domainUserId = id[1], // We could use the global (domainUserId) but this is better etiquette
+					createTs = id[2],
+					visitCount = id[3],
+					currentVisitTs = id[4],
+					lastVisitTs = id[5],
+					sessionIdFromCookie = id[6];
+
+				// When cookies are enabled
+				if (cookiesDisabled === '0') {
+					memorizedSessionId = sessionIdFromCookie;
+
+					// When cookie/local storage is enabled - make a new session
+					if (configStateStorageStrategy != 'none') {
+						// New session (aka new visit)
+						visitCount++;
+						// Update the last visit timestamp
+						lastVisitTs = currentVisitTs;
+						// Regenerate the session ID
+						memorizedSessionId = uuid.v4();
+					}
+
+					memorizedVisitCount = visitCount;
+
+					// Create a new session cookie
+					setSessionCookie()
+
+				} else {
+					memorizedSessionId = uuid.v4();
+					memorizedVisitCount++;
+				}
+
+				// Update cookies
+				if (configStateStorageStrategy != 'none') {
+					setDomainUserIdCookie(_domainUserId, createTs, memorizedVisitCount, nowTs,
+						lastVisitTs, memorizedSessionId);
+					setSessionCookie();
+				}
+
+				lastEventTime = new Date().getTime();
+			},
+
+			/**
 			 * Get the cookie name as cookieNamePrefix + basename + . + domain.
 			 *
 			 * @return string Cookie name
