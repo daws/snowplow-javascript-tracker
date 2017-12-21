@@ -1339,7 +1339,7 @@
 							altitudeAccuracy: coords.altitudeAccuracy,
 							bearing: coords.heading,
 							speed: coords.speed,
-							timestamp: position.timestamp
+							timestamp: Math.round(position.timestamp)
 						}
 					};
 					commonContexts.push(geolocationContext);
