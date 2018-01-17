@@ -476,11 +476,12 @@
 		 * Cookie getter.
 		 */
 		function getSnowplowCookieValue(cookieName) {
+			var fullName = getSnowplowCookieName(cookieName);
 			if (configStateStorageStrategy == 'localStorage') {
-				return helpers.attemptGetLocalStorage(cookieName);
+				return helpers.attemptGetLocalStorage(fullName);
 			} else if (configStateStorageStrategy == 'cookie' ||
 					configStateStorageStrategy == 'cookieAndLocalStorage') {
-				return cookie.cookie(getSnowplowCookieName(cookieName));
+				return cookie.cookie(fullName);
 			}
 		}
 
