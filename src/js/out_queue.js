@@ -55,7 +55,7 @@
 	 * @param int maxPostBytes Maximum combined size in bytes of the event JSONs in a POST request
 	 * @return object OutQueueManager instance
 	 */
-	object.OutQueueManager = function (functionName, namespace, mutSnowplowState, useLocalStorage, usePost, bufferSize, maxPostBytes) {
+	object.OutQueueManager = function (functionName, namespace, mutSnowplowState, useLocalStorage, usePost, bufferSize, maxPostBytes, postPathOverride) {
 		var	queueName,
 			executingQueue = false,
 			configCollectorUrl,
@@ -64,7 +64,7 @@
 		// Fall back to GET for browsers which don't support CORS XMLHttpRequests (e.g. IE <= 9)
 		usePost = usePost && window.XMLHttpRequest && ('withCredentials' in new XMLHttpRequest());
 
-		var path = usePost ? '/com.snowplowanalytics.snowplow/tp2' : '/i';
+		var path = postPathOverride || (usePost ? '/com.snowplowanalytics.snowplow/tp2' : '/i');
 
 		bufferSize = (localStorageAccessible() && useLocalStorage && usePost && bufferSize) || 1;
 

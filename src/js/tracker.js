@@ -76,13 +76,14 @@
 	 * 14. sessionCookieTimeout, 1800
 	 * 15. contexts, {}
 	 * 16. post, false
-	 * 17. bufferSize, 1
-	 * 18. crossDomainLinker, false
-	 * 19. maxPostBytes, 40000
-	 * 20. discoverRootDomain, false
-	 * 21. cookieLifetime, 63072000
-	 * 22. stateStorageStrategy, 'cookieAndLocalStorage'
-	 * 23. respectOptOutCookie, false
+   * 17. postPathOverride, null
+	 * 18. bufferSize, 1
+	 * 19. crossDomainLinker, false
+	 * 20. maxPostBytes, 40000
+	 * 21. discoverRootDomain, false
+	 * 22. cookieLifetime, 63072000
+	 * 23. stateStorageStrategy, 'cookieAndLocalStorage'
+	 * 24. respectOptOutCookie, false
 	 */
 	object.Tracker = function Tracker(functionName, namespace, version, mutSnowplowState, argmap) {
 
@@ -281,7 +282,8 @@
 					configStateStorageStrategy == 'cookieAndLocalStorage',
 				argmap.post,
 				argmap.bufferSize,
-				argmap.maxPostBytes || 40000),
+				argmap.maxPostBytes || 40000,
+        argmap.postPathOverride),
 
 			// Flag to prevent the geolocation context being added multiple times
 			geolocationContextAdded = false,
